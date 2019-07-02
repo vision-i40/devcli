@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+_get_user() {
+    declare -A users=(
+        ["joseronierison"]="joseronierison"
+        ["roni"]="joseronierison"
+    )
+
+    local username=${1}
+
+    echo "${users[$username]}"
+}
+
+_get_current_user() {
+    local username=$(whoami)
+    echo $(_get_user $username)
+}

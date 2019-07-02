@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+use 'dep'
+
+SUBCOMMAND_DESC="Dependencies check, install and uninstall"
+SUBCOMMAND_HELP=$(cat <<EOH
+  check        Check if the the required dependencies are installed.
+EOH
+)
+
+case ${1} in
+  check)
+    in_cyan "Checking dependencies"
+    _check_dependencie java true "https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html"
+    _check_java_version "1.8"
+
+    _check_dependencie git true "https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+    _check_dependencie sbt true "https://www.scala-sbt.org/1.0/docs/Setup.html"
+    _check_dependencie docker true "https://docs.docker.com/install/"
+    _check_dependencie docker-compose true "https://docs.docker.com/compose/install/"
+
+    _check_dependencie gcloud false "https://cloud.google.com/sdk/install"
+    _check_dependencie kubectl false "https://kubernetes.io/docs/tasks/tools/install-kubectl/"
+    _check_dependencie helm false "https://helm.sh/docs/using_helm/"
+  ;;
+  help)
+less <<END_OF_README
+
+END_OF_README
+  ;;
+esac

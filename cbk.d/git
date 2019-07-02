@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+use 'git'
+use 'users'
+
+SUBCOMMAND_DESC="Git related command such as clone all repos, update repos and commit in configured pattern"
+SUBCOMMAND_HELP=$(cat <<EOH
+  clone_all             Clone all repos in same level of devcli.
+    setup_story         Setup story and pair.
+    setup_view          Show current story and pair setup.
+    commit              Commit story in the configured pattern.
+EOH
+)
+
+repositories=(
+  "git@github.com:vision-i40/web_app.git",
+  "git@github.com:vision-i40/customer_registry_service.git"
+  "git@github.com:vision-i40/infra.git"
+)
+
+devcli_folder=$(dirname "$0")
+story_setup_file=$devcli_folder"/story_setup"
+
+commit_message_template="STORY [@YOUR_USER, @PAIR_USER] MESSAGE"
+
+case ${1} in
+  clone_all)
+    in_cyan "Cloning all repositories in $devcli_folder/../"
+
+    _clone_repositories
+  ;;
+  setup_story)
+    in_cyan "Setting up story and pair configuration for git commands."
+
+    local story_number=${2}
+    local pair=${3}
+
+    _setup_history $story_number $pair
+  ;;
+  setup_view)
+    _setup_view
+  ;;
+  commit)
+    local message=$(echo "${@:2}")
+
+    _commit "$message"
+  ;;
+  help)
+less <<END_OF_README
+Descriptions and some use cases of git commands:
+
+    clone_all           Clone all clearing repos in same level of clearing_devcli.
+    setup_story         Setup story and pair.
+    setup_view          Show current story and pair setup.
+    commit              Commit story in the configured pattern.
+
+Examples:
+
+$ cdc git clone_all
+
+$ cdc git setup_story 99999 SomeOne
+$ cdc git setup_story 99999 -solo
+
+$ cdc git commit <COMMIT_MESSAGE>
+$ cdc git commit -solo <COMMIT_MESSAGE>
+$ cdc git commit -solo -tech <COMMIT_MESSAGE>
+
+END_OF_README
+  ;;
+esac

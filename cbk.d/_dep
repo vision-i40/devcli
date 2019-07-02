@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+function _check_dependencie() {
+  local dependencie=${1}
+  local required=${2}
+  local help_link=${3}
+
+  if [[ $(which $dependencie) ]]; then
+    in_green "$dependencie : is installed"
+  else
+    _display_error_message $dependencie $required $help_link
+  fi
+}
+
+function _display_error_message() {
+  local dependencie=${1}
+  local required=${2}
+  local help_link=${3}
+
+  if $required ; then
+    in_red "$dependencie : is not installed and is required. $help_link"
+  else
+    in_yellow "$dependencie : is not installed but is not required. $help_link"
+  fi
+}
+
+function _check_java_version() {
+  local required_version=${1}
+
+  if [[ ! $(which java) ]]; then
+    return 0
+  fi
+
+  java_version=$("java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+
+  if [[ $java_version = *$required_version* ]]; then
+    in_green "Java version : '$java_version'"
+  else
+    in_red "Java '$java_version' is intalled but '$required_version' is required. http://tipsonubuntu.com/2016/07/31/install-oracle-java-8-9-ubuntu-16-04-linux-mint-18/"
+  fi
+}

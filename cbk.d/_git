@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+_clone_repositories() {
+    for repository in "${repositories[@]}"; do
+      cd $devcli_folder/../
+      git clone $repository
+      cd $devcli_folder
+    done
+}
+
+_setup_history() {
+    local story_number=${1}
+    local pair=${2}
+
+    cd $devcli_folder
+    echo "CBK_STORY_NUMBER=$story_number" > $story_setup_file
+
+    if [[ $pair != "-solo" ]]; then
+        git_user=$(_get_user $pair)
+        echo "CBK_PAIR=$git_user" >> $story_setup_file
+    fi
+
+    _setup_view
+}
+
+_setup_view() {
+    story=$(_get_story "$story_setup_file")
+    pair=$(_get_pair "$story_setup_file")
+
+    in_green "Story: $story"
+    in_green "Pair: $pair"
+}
+
+_commit() {
+    local commit_message=${1}
+
+    local first_word=$(echo $commit_message | cut -d\  -f1)
+    local second_word=$(echo $commit_message | cut -d\  -f2)
+
+    local pair=$(_get_pair)
+    local story=$(_get_story)
+    local git_user=$(_get_current_user)
+
+    local commit=$(echo $commit_message_template | sed -e "s/@YOUR_USER/@$git_user/g")
+
+    if [ "$first_word" = "-solo" ] || [ "$second_word" = "-solo" ] || [ -z $pair ]; then
+        commit=$(echo $commit | sed -e "s/\, @PAIR_USER//g")
+    else
+        commit=$(echo $commit | sed -e "s/\PAIR_USER/$pair/g")
+    fi
+
+    if [ "$first_word" = "-tech" ] || [ "$second_word" = "-tech" ] || [ -z $story ]; then
+        commit=$(echo $commit | sed -e "s/\STORY/CBK-000/g")
+    else
+        commit=$(echo $commit | sed -e "s/\STORY/$story/g")
+    fi
+
+    commit=$(echo $commit | sed -e "s/MESSAGE/$commit_message/g" | sed -e "s/-solo //g" | sed -e "s/-tech //g" )
+
+    in_cyan "Check and confirm your commit message bellow: "
+    in_green "-> \"$commit\""
+
+    read -p "Confirm? (y/N)?" yn
+
+    if [ "$yn" = "Y" ] || [ "$yn" = "y" ] ; then
+        git commit -m "$commit"
+    fi
+}
+
+_get_story() {
+    echo $(grep STORY $story_setup_file | cut -f2 -d"=")
+}
+
+_get_pair() {
+    echo $(grep PAIR $story_setup_file | cut -f2 -d"=")
+}
